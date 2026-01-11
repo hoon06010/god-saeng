@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>갓생 자격증 발급기</title>
+    <style>
+        /* 1. 기본 스타일 & 폰트 */
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background-color: white;
+            min-height: 100vh;
+            padding: 30px 20px;
+            box-sizing: border-box;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #222;
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+            text-align: center;
+            letter-spacing: -1px;
+        }
+
+        /* 입력 폼 */
+        .input-group {
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #444;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 1.1rem;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        input[type="text"]:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        /* 버튼들 */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        
+        .btn-main {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        .btn-main:active { transform: scale(0.98); }
+
+        .btn-save {
+            background: linear-gradient(135deg, #333, #000);
+            color: white;
+        }
+        
+        .btn-insta {
+            background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+            color: white;
+            display: none; /* 처음엔 숨김 */
+        }
+
+        .btn-retry {
+            background-color: #f5f5f5;
+            color: #666;
+        }
+
+        /* 2. 자격증 디자인 (결과 화면) */
+        #result-area {
+            display: none;
+            width: 100%;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        /* 캡처될 카드 영역 */
+        .certificate-card {
+            width: 340px;
+            height: 600px; /* 세로로 조금 더 길게 (설명 들어갈 공간 확보) */
+            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png'), linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 4px solid #222; /* 테두리 조금 더 진하게 */
+            border-radius: 20px;
+            padding: 35px 30px;
+            box-sizing: border-box;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 중앙 정렬 */
+            text-align: center;
+            box-shadow: 10px 10px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        /* 배경 워터마크 */
+        .bg-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 5rem;
+            font-weight: 900;
+            color: rgba(0,0,0,0.03);
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .cert-header {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 40px;
+            border-bottom: 4px solid #222;
+            padding-bottom: 15px;
+            width: 100%;
+            letter-spacing: -1px;
+            color: #222;
+        }
+
+        /* 이름 영역 */
+        .name-area {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            width: 100%;
+            text-align: left;
+        }
+        .name-value {
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-decoration: underline;
+            text-underline-position: under;
+        }
+
+        /* 종목 타이틀 영역 */
+        .title-area {
+            margin: 20px 0 30px 0;
+            width: 100%;
+        }
+        .title-label {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+            text-align: left;
+        }
+        .title-value {
+            font-size: 1.7rem;
+            font-weight: 900;
+            color: #d32f2f; /* 강조색 */
+            line-height: 1.3;
+            word-break: keep-all;
+            display: block;
+            text-align: center;
+            padding: 10px;
+            background-color: rgba(211, 47, 47, 0.05);
+            border-radius: 10px;
+        }
+
+        /* 상세 설명 영역 (핵심) */
+        .desc-area {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #444;
+            word-break: keep-all;
+            margin-bottom: auto; /* 남은 공간 채우기 */
+            padding: 0 10px;
+            font-style: italic; /* 명언 느낌 */
+        }
+        .desc-quote-start, .desc-quote-end {
+            font-size: 1.5rem;
+            color: #ddd;
+            font-family: serif;
+        }
+
+        /* 하단 정보 */
+        .bottom-info {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            border-top: 2px solid #eee;
+            padding-top: 15px;
+            margin-bottom: 30px;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .stamp {
+            position: absolute;
+            bottom: 40px;
+            right: 30px;
+            width: 90px;
+            height: 90px;
+            border: 4px solid #d32f2f;
+            border-radius: 50%;
+            color: #d32f2f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 900;
+            font-size: 1.4rem;
+            transform: rotate(-15deg);
+            opacity: 0.8;
+            mix-blend-mode: multiply;
+            background-image: url('https://www.transparenttextures.com/patterns/grunge-wall.png');
+            z-index: 10;
+        }
+
+        .footer-msg {
+            position: absolute;
+            bottom: 15px;
+            font-size: 0.75rem;
+            color: #999;
+        }
+
+        .guide-msg {
+            text-align: center;
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="input-area">
+            <h1>✨ 갓생 자격증 발급센터</h1>
+            <p class="guide-msg">
+                이름만 입력하면 AI(?)가 당신의<br>하찮지만 소중한 능력을 찾아드립니다.
+            </p>
+
+            <div class="input-group">
+                <label for="nameInput">이름 (또는 닉네임)</label>
+                <input type="text" id="nameInput" placeholder="예: 홍길동">
+            </div>
+            
+            <button class="btn btn-main" onclick="generateCertificate()">자격증 발급받기 🪄</button>
+        </div>
+
+        <div id="result-area">
+            <h2 style="margin: 0 0 10px 0;">발급 완료! 🎉</h2>
+            <p id="saveGuideMsg" class="guide-msg" style="margin-bottom: 15px;">
+                내 능력을 인스타 스토리에 공유해보세요!
+            </p>
+
+            <div class="certificate-card" id="capture-target">
+                <div class="bg-watermark">CERTIFICATE</div>
+                <div class="cert-header">국가 공인 갓생 자격증</div>
+                
+                <div class="name-area">
+                    성 명 : <span class="name-value" id="resultName"></span>
+                </div>
+
+                <div class="title-area">
+                    <span class="title-label">자격 종목</span>
+                    <span class="title-value" id="resultTitle"></span>
+                </div>
+
+                <div class="desc-area">
+                    <span class="desc-quote-start">❝</span><br>
+                    <span id="resultDesc"></span><br>
+                    <span class="desc-quote-end">❞</span>
+                </div>
+
+                <div class="bottom-info">
+                    <span id="resultDate"></span>
+                    <span id="resultId"></span>
+                </div>
+
+                <div class="stamp">합격</div>
+                
+                <div class="footer-msg">위 사람은 위 분야에서 타의 추종을 불허함을 인증함.</div>
+            </div>
+            <div style="width:100%; margin-top: 20px;">
+                <button class="btn btn-main" style="background: linear-gradient(45deg, #f09433, #bc1888); margin-bottom:10px;" onclick="shareToInstagram()">
+                    📸 인스타그램(스토리)로 공유하기
+                </button>
+                <button class="btn btn-retry" onclick="downloadImage()">💾 그냥 이미지 저장하기</button>
+                <button class="btn btn-retry" onclick="reset()">다시 하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <script>
+        // 🔥 하찮은 능력 데이터 (제목 + 설명)
+        const certificateData = [
+            { title: "🛌 프로 눕방러 1급", desc: "주말 48시간 동안 화장실 갈 때를 제외하고 등판이 침대에서 떨어지지 않는 기적을 보여줌." },
+            { title: "🍜 마라탕 감별사 2급", desc: "국물 한 숟갈만 먹어도 맵기 단계(0~4단계)와 사골 분말 함유량을 귀신같이 맞춰버림." },
+            { title: "😮‍💨 숨쉬기 운동 마스터", desc: "20년 넘게 숨만 쉬어도 근손실이 오지 않는 신비로운 신체 대사 능력을 보유함." },
+            { title: "🏃 조기 퇴근 기능사", desc: "오후 5시 50분부터 가방 싸는 소리 없이 정리하고 6시 00분 01초에 사무실 문을 통과함." },
+            { title: "💸 월급 루팡 전문가", desc: "출근하자마자 '집 가고 싶다'는 생각을 1분당 60회 하며, 급여일 전날 통장 잔고 0원을 맞추는 능력." },
+            { title: "☕ 카페인 중독 기술자", desc: "혈관에 피 대신 아메리카노가 흐르며, 커피 없이는 한국어 구사가 불가능한 상태." },
+            { title: "📱 SNS 눈팅 전문가", desc: "좋아요는 절대 누르지 않지만, 누가 누구랑 헤어졌는지 30분 만에 파악하는 정보력 보유." },
+            { title: "🏠 이불 밖은 위험해 협회장", desc: "약속 취소 연락이 오면 겉으로는 아쉬워하지만 속으로는 쾌재를 부르며 춤을 춤." },
+            { title: "🤔 메뉴 결정 장애 1급", desc: "점심 메뉴 고르는 데 1시간을 쓰고 결국 어제 먹은 돈까스를 또 시키는 결단력 부족을 인증함." },
+            { title: "🎬 넷플릭스 썸네일 감상사", desc: "영화 고르는 데 2시간 쓰고, 정작 재생 버튼 누르면 5분 만에 잠드는 놀라운 집중력." },
+            { title: "🤷‍♂️ 영혼 없는 리액션 장인", desc: "상대방의 말 내용을 전혀 듣지 않고도 '아 진짜?', '대박', '헐' 3단 콤보로 대화 3시간 가능." },
+            { title: "⏰ 5분 간격 알람 설정사", desc: "아침 7시부터 8시까지 5분 간격으로 알람 12개를 맞추고 결국 8시 5분에 일어나는 끈기." },
+            { title: "💩 똥고집 부리기 1급", desc: "본인이 틀린 걸 알지만 자존심 때문에 끝까지 우겨서 결국 분위기를 싸하게 만드는 능력." },
+            { title: "📉 인간 지표 (주식/코인)", desc: "내가 사면 떨어지고 내가 팔면 오르는, 전 세계 경제를 반대로 움직이는 마이더스의 손." },
+            { title: "💪 작심삼일 다이어터", desc: "헬스장 기부 천사로서, '다이어트는 내일부터'라는 명언을 365일 실천 중." },
+            { title: "🧹 방구석 청소 미루기 달인", desc: "옷 의자에 쌓아두기 탑 쌓기 세계 신기록 보유. 누울 자리만 있으면 청소 안 함." },
+            { title: "💬 카톡 안읽씹 전문가", desc: "미리 보기로 내용은 다 읽었지만 귀찮아서 3일 뒤에 '앗 이제 봤어'라고 답장하는 뻔뻔함." },
+            { title: "📸 음식 영정사진 작가", desc: "음식 나오면 먹지 못하게 하고 10분간 앵글을 잡으나, 결과물은 항상 맛없게 나옴." },
+            { title: "🚌 버스/지하철 꿀잠 기능사", desc: "헤드뱅잉을 하며 자다가도 내릴 정거장 안내방송이 나오면 기적처럼 눈을 뜸." },
+            { title: "👖 츄리닝 코디네이터", desc: "무릎 나온 츄리닝 하나로 편의점, PC방, 학교 앞까지 커버하는 패션 철학 보유." },
+            { title: "🍺 알콜성 치매 유망주", desc: "술 먹은 다음 날 '내가 어제 뭐 실수했어?'라고 묻는 것이 일상 루틴임." },
+            { title: "🎁 셀프 선물 전문가", desc: "'오늘 고생한 나를 위해'라는 핑계로 필요 없는 택배를 매일 주문하는 소비 요정." },
+            { title: "🎤 코노 혼코노 장인", desc: "혼자 가서 발라드 부르다가 감정에 취해 눈물 한 방울 흘리는 감성 보유." },
+            { title: "🦴 팩트 폭격기 조종사", desc: "친구의 뼈를 때리는 팩트만 골라서 말해 순살 치킨으로 만들어버리는 언변." },
+            { title: "🧐 멍 때리기 대회 우승 후보", desc: "아무 생각 없이 허공을 1시간 동안 응시할 수 있으며, 이때 뇌파가 정지한 듯 평온함." },
+            { title: "👂 팔랑귀 협회 정회원", desc: "남들이 좋다고 하면 쓸모없는 물건도 일단 사고 보는 호갱력을 인증함." },
+            { title: "🤬 분노 조절 실패 전문가", desc: "방문 모서리에 발가락을 찧으면 현란한 랩 실력으로 욕을 1분간 구사함." },
+            { title: "🥺 유리멘탈 보호 관리사", desc: "작은 비난에도 쿠크다스처럼 마음이 바사삭 부서지는 섬세한 감수성." },
+            { title: "🤪 아무말 대잔치 주최자", desc: "논리와 문맥 없이 의식의 흐름대로 1시간 동안 떠들 수 있는 언어의 연금술사." },
+            { title: "🤗 눈치 보기 1급 기술자", desc: "상사가 기침만 해도 커피가 필요한지, 퇴근이 마려운지 파악해내는 생존 본능." },
+            { title: "🥶 얼죽아 협회 우수회원", desc: "영하 20도 한파에도 아이스 아메리카노를 시키며 손을 덜덜 떠는 뚝심." },
+            { title: "👓 안경 김서림 방지 실패자", desc: "라면 먹을 때, 버스 탈 때 항상 안경이 뿌옇게 변해 앞이 안 보이는 징크스." },
+            { title: "🔋 배터리 1% 생존 전문가", desc: "핸드폰 배터리가 1% 남았을 때 충전기를 꽂는 스릴을 즐기는 익스트림 유저." },
+            { title: "🎧 에어팟 한쪽 찾기 달인", desc: "항상 에어팟 한쪽을 잃어버리고 침대 밑, 주머니 속을 뒤지는 탐정 놀이를 즐김." },
+            { title: "🛒 장바구니 담기 장인", desc: "사지도 않을 거면서 쇼핑몰 장바구니에 500만 원어치 담아두고 대리 만족함." },
+            { title: "📺 유튜브 알고리즘 피해자", desc: "잠깐 영상 하나 보려다가 알 수 없는 알고리즘에 이끌려 새벽 4시까지 깨어있음." }
+        ];
+
+        // 1. 발급하기 함수
+        function generateCertificate() {
+            const name = document.getElementById('nameInput').value.trim();
+
+            if (!name) {
+                alert("이름을 입력해주세요! 🥲");
+                document.getElementById('nameInput').focus();
+                return;
+            }
+
+            // [랜덤 로직] 데이터 뽑기
+            const randomIndex = Math.floor(Math.random() * certificateData.length);
+            const selectedData = certificateData[randomIndex];
+
+            // 데이터 넣기
+            document.getElementById('resultName').innerText = name;
+            document.getElementById('resultTitle').innerText = selectedData.title;
+            document.getElementById('resultDesc').innerText = selectedData.desc;
+
+            // 날짜 및 번호
+            const today = new Date();
+            const dateString = `${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
+            document.getElementById('resultDate').innerText = dateString;
+            document.getElementById('resultId').innerText = `No. ${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+            // 화면 전환
+            window.scrollTo(0,0);
+            document.getElementById('input-area').style.display = 'none';
+            document.getElementById('result-area').style.display = 'flex';
+            
+            // 초기화
+            document.getElementById('instaBtn').style.display = 'none';
+             document.getElementById('saveGuideMsg').innerHTML = "내 능력을 인스타 스토리에 공유해보세요!";
+        }
+
+        // 2. 이미지 저장 함수
+        function downloadImage() {
+            const element = document.getElementById('capture-target');
+            const saveBtn = document.querySelector('.btn-save');
+            
+            saveBtn.innerText = "저장 중... ⏳";
+
+            // 외부 이미지가 없으므로 useCORS 옵션 불필요하지만 안전하게 유지
+            html2canvas(element, {
+                scale: 2, 
+                backgroundColor: null,
+                scrollY: -window.scrollY 
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `갓생자격증_${new Date().getTime()}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+
+                saveBtn.innerText = "✅ 저장 완료! (다시 저장하기)";
+                document.getElementById('instaBtn').style.display = 'block'; 
+                
+                document.getElementById('saveGuideMsg').innerHTML = "저장 완료!<br>인스타그램 앱을 열어 스토리에 올려보세요.";
+            });
+        }
+        
+        // [추가] 공유하기 기능 (Web Share API 사용)
+        async function shareToInstagram() {
+            const element = document.getElementById('capture-target');
+            
+            // 1. 화면 캡처
+            try {
+                const canvas = await html2canvas(element, { 
+                    scale: 2, 
+                    backgroundColor: null,
+                    scrollY: -window.scrollY 
+                });
+
+                // 2. 캡처한 이미지를 파일(Blob)로 변환
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], "god_saeng_cert.png", { type: "image/png" });
+
+                    // 3. 브라우저가 '파일 공유'를 지원하는지 확인
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            // 시스템 공유 창 띄우기 (여기서 인스타그램 선택)
+                            await navigator.share({
+                                files: [file],
+                                title: '갓생 자격증',
+                                text: '제 갓생 능력을 확인해보세요! #갓생자격증',
+                            });
+                        } catch (err) {
+                            console.log("공유 취소 또는 에러:", err);
+                        }
+                    } else {
+                        // 4. 공유 기능을 지원하지 않는 경우 (PC 등) -> 그냥 다운로드 실행
+                        alert("이 기기에서는 바로 공유가 안 돼요 🥲\n이미지를 저장해드릴게요!");
+                        downloadImage();
+                    }
+                });
+            } catch (err) {
+                console.error("캡처 실패:", err);
+                alert("이미지 생성에 실패했습니다.");
+            }
+        }
+        // 3. 인스타그램 앱 열기
+        function openInstagram() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            if (userAgent.indexOf("android") > -1) {
+                 location.href = 'intent://instagram.com/#Intent;package=com.instagram.android;scheme=https;end';
+            } else if (userAgent.indexOf("iphone") > -1 || userAgent.indexOf("ipad") > -1) {
+                 setTimeout(function () {
+                     window.location = "https://www.instagram.com"; 
+                 }, 500);
+                 window.location = "instagram://story-camera";
+            } else {
+                window.open('https://www.instagram.com', '_blank');
+            }
+        }
+
+        // 4. 다시 하기
+        function reset() {
+            document.getElementById('input-area').style.display = 'block';
+            document.getElementById('result-area').style.display = 'none';
+            document.getElementById('nameInput').value = '';
+            window.scrollTo(0,0);
+        }
+    </script>
+</body>
+</html>
